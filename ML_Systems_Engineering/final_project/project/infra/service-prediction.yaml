@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: prediction-service
+  namespace: davezack
+spec:
+  selector:
+    app: python-api
+  ports:
+  - name: port
+    protocol: "TCP"
+    port: 8000
+    targetPort: 8000
+  type: LoadBalancer

@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-api-deployment
+  namespace: davezack
+  labels:
+    app: python-api
+spec:
+  selector:
+    matchLabels:
+      app: python-api
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: python-api
+    spec:
+      containers:
+      - name: python-api-container
+        image: lab3:latest
+        imagePullPolicy: Never
+        ports:
+          - containerPort: 8000
+          - containerPort: 6379
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 1
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 1
+      initContainers:
+      - name: init-container-1
+        image: busybox
+        command: ['sh', '-c', 'set -x; until nslookup redis-service.w255.svc.cluster.local; do echo "Waiting for redis-service"; sleep 2; done']
+      - name: init-container-2
+        image: busybox
+        command: ['sh', '-c', 'echo "ping" | nc -w 3 redis-service.w255.svc.cluster.local 6379 | grep "+PONG"']
